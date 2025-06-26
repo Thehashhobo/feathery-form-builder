@@ -25,6 +25,17 @@
   background: #ffffff;
 }
 
+.form-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed #ccc;
+  margin: 4px;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+
 .form-canvas {
   grid-row: 3 / 4;
   grid-column: 3 / 4;
