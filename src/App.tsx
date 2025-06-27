@@ -1,8 +1,9 @@
 import "./App.css";
 import { DndContext } from "@dnd-kit/core";
 import { useState } from "react";
-import { DraggableTrayItem, DroppableCell } from "./components";
-import type { TrayElement, CanvasFormComponent } from "./types";
+import { DraggableTrayItem, DroppableCell, SubmissionsViewer } from "./components";
+import type { TrayElement, CanvasFormComponent, FormData } from "./types";
+import { mockBackendAPI } from "./api/mockBackend";
 import { v4 as uuidv4 } from "uuid";
 
 const trayElements: TrayElement[] = [
@@ -52,6 +53,88 @@ const trayElements: TrayElement[] = [
 
 function App() {
   const [canvasMap, setCanvasMap] = useState<Record<string, CanvasFormComponent>>({});
+  const [formData, setFormData] = useState<FormData>({});
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  
+  // Handle form field changes
+  const handleFieldChange = (componentId: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [componentId]: value
+    }));
+  };
+
+  // Handle form submission
+  const handleFormSubmit = async () => {
+    console.log("Form submitted with data:", formData);
+    
+    // validation
+    const errors: Record<string, string> = {};
+    const formComponents = Object.values(canvasMap);
+    
+    formComponents.forEach(component => {
+      const fieldValue = formData[component.id] || "";
+      
+      // Required field
+      if (component.type !== 'button' && component.type !== 'heading' && !fieldValue.trim()) {
+        errors[component.id] = `${component.displayName || component.type} is required`;
+      }
+      
+      // Email validation
+      if (component.type === 'email' && fieldValue) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(fieldValue)) {
+          errors[component.id] = 'Invalid email format';
+        }
+      }
+      
+      // Phone validation
+      if (component.type === 'phone' && fieldValue) {
+        const cleaned = fieldValue.replace(/\D/g, ''); // removes non-digits
+        const phoneRegex = /^\d{10,11}$/;
+        if (!phoneRegex.test(cleaned)) {
+          errors[component.id] = 'Phone format should be (555) 123-4567';
+        }
+      }
+    });
+    
+    if (Object.keys(errors).length > 0) {
+      alert('Please fix the following errors:\n' + Object.values(errors).join('\n'));
+      return;
+    }
+
+    // Prepare form submission data
+    const submissionData = {
+      formId: 'dynamic-form-' + Date.now(),
+      timestamp: new Date().toISOString(),
+      fields: formComponents.map(component => ({
+        id: component.id,
+        type: component.type,
+        label: component.displayName || component.type,
+        value: formData[component.id] || ""
+      }))
+    };
+
+    try {
+      // Use mock backend API
+      const result = await mockBackendAPI.submitForm(submissionData);
+      
+      if (result.status === 'success') {
+        alert(`Form submitted successfully!\nSubmission ID: ${result.id}`);
+        // Reset form
+        setFormData({});
+        // Trigger refresh for submissions viewer
+        setRefreshTrigger(prev => prev + 1);
+      } else {
+        throw new Error(result.message);
+      }
+    } catch (error) {
+      console.error('Form submission error:', error);
+      alert('Error submitting form. Please try again.');
+    }
+  };
+
   const handleDragEnd = (event: any) => {
     // active: the item being dragged
     // over: the target cell where the item is dropped
@@ -80,15 +163,17 @@ function App() {
 
     // Dragging from tray - create new component
     if (dragData?.type === 'tray-item') {
+      const newComponentId = uuidv4();
       setCanvasMap((prev) => ({
         ...prev,
         [targetCellId]: {
-          id: uuidv4(),
+          id: newComponentId,
           type: dragData.componentType, // Use the actual form component type
           displayName: dragData.displayName, // Store the display name from tray
-          placeholder: dragData.trayElement.placeholder,
+          placeholder: dragData.trayElement.placeholder, 
         },
       }));
+      
     } 
 
     // Dragging from canvas - move existing component
@@ -105,7 +190,6 @@ function App() {
           const newMap = { ...prev };
           const targetComponent = newMap[targetCellId];
           
-          
           newMap[targetCellId] = draggedComponent;
           if (targetComponent) {
             newMap[sourceCellId] = targetComponent;
@@ -115,12 +199,28 @@ function App() {
           
           return newMap;
         });
+        
+        // Trigger success animation for moved items
+
       } 
     }
   };
 
   return (
     <DndContext onDragEnd={handleDragEnd}>
+      {/* Form Builder Controls */}
+      <div className="form-builder-controls">
+        <button 
+          onClick={() => setIsPreviewMode(!isPreviewMode)}
+          className="mode-toggle-btn"
+        >
+          {isPreviewMode ? "Edit Mode" : "Preview Mode"}
+        </button>
+        <SubmissionsViewer 
+          refreshTrigger={refreshTrigger}
+        />
+      </div>
+
       <div className="element-tray">
         {trayElements.map((element) => (
           <DraggableTrayItem key={element.id} element={element} />
@@ -130,11 +230,21 @@ function App() {
       <div className="form-canvas">
         {Array.from({ length: 8 }).map((_, i) => {
           const cellId = `cell-${i}`;
+          const component = canvasMap[cellId];
+          
+          // For buttons, provide the form submission handler
+          const handleClick = component?.type === 'button' ? handleFormSubmit : undefined;
+          
           return (
             <DroppableCell
               key={cellId}
               id={cellId}
-              component={canvasMap[cellId]}
+              component={component}
+              value={component ? formData[component.id] || "" : ""}
+              onChange={component ? (value) => handleFieldChange(component.id, value) : undefined}
+              onClick={handleClick}
+              disabled={!isPreviewMode}
+              isPreviewMode={isPreviewMode}
             />
           );
         })}

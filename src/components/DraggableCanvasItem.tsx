@@ -4,9 +4,15 @@ import type { CanvasFormComponent } from "../types";
 
 interface DraggableCanvasItemProps {
   component: CanvasFormComponent;
+  value?: string;
+  onChange?: (value: string) => void;
+  onClick?: () => void;
+  disabled?: boolean;
+  isPreviewMode?: boolean;
 }
 
-export function DraggableCanvasItem({ component }: DraggableCanvasItemProps) {
+export function DraggableCanvasItem({ component, value, onChange, onClick, disabled, isPreviewMode }: DraggableCanvasItemProps) {
+
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({ 
       id: component.id,
@@ -25,30 +31,31 @@ export function DraggableCanvasItem({ component }: DraggableCanvasItemProps) {
     isDragging ? "dragging" : "",
   ].filter(Boolean).join(" ");
 
-  // Get display name if available, fallback to type
-  const displayText = component.displayName || component.type;
-
   return (
     <div
       ref={setNodeRef}
-      {...listeners}
-      {...attributes}
+      {...(!isPreviewMode ? listeners : {})}
+      {...(!isPreviewMode ? attributes : {})}
       className={canvasClasses}
-      aria-label={`${displayText} form element`}
+      aria-label={`${component.displayName || component.type} form element`}
       aria-roledescription="placed form element"
-      title={`${displayText} (${component.type})`} // Tooltip showing both display name and type
+      title={`${component.displayName || component.type} (${component.type})`}
       style={{
         transform: transform
           ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
           : undefined,
+        cursor: isPreviewMode ? 'default' : 'grab'
       }}
     >
       <div className="canvas-item-content">
         <Element 
           displayName={component.displayName}
           placeholder={component.placeholder}
+          value={value}
+          onChange={onChange}
+          onClick={onClick}
+          disabled={disabled}
         />
-        <div className="canvas-item-label">{displayText}</div>
       </div>
     </div>
   );

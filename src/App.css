@@ -7,13 +7,13 @@
 #app {
   display: grid;
   grid-template-columns: 1fr min-content min-content min-content 1fr;
-  grid-template-rows: min-content 1fr min-content 2fr;
+  grid-template-rows: min-content min-content 1fr min-content 2fr;
   height: 100vh;
   background: #eeeeee;
 }
 
 .element-tray {
-  grid-row: 1 / 2;
+  grid-row: 2 / 3;
   grid-column: 2 / 5;
   height: min-content;
   width: min-content;
@@ -25,41 +25,33 @@
   background: #ffffff;
 }
 
+/* Individual form cells in the canvas*/
 .form-cell {
-  /* Layout */
   display: flex;
   align-items: center;
   justify-content: center;
-  
-  /* Sizing */
   box-sizing: border-box;
   min-height: 75px;
   padding: 8px;
-  
-  /* Appearance */
   border: 1px dashed #ccc;
   background: #fff;
-  
-  /* Only transition background color for performance */
-  transition: background-color 0.15s ease;
+  transition: background-color 0.15s ease; /* Only transition background for performance */
 }
 
+/* Cell states for filled cells */
 .form-cell.has-component {
   background: #f9f9f9 !important;
 }
-
 .form-cell.drag-over-empty {
   background: #ccf !important;
 }
-
 .form-cell.drag-over-occupied {
   background: #fcc !important;
 }
 
-
-
+/* Main form canvas grid */
 .form-canvas {
-  grid-row: 3 / 4;
+  grid-row: 4 / 5;
   grid-column: 3 / 4;
   display: grid;
   grid-template-columns: 250px 250px;
@@ -70,27 +62,19 @@
   gap: 4px;
 }
 
+/* Draggable tray elements */
 .element-placeholder {
-  /* Simplified background for better performance */
   background: #4299e1;
   border-radius: 12px;
   height: 80px;
   width: 120px;
-  
-  /* Layout */
   display: flex;
   align-items: center;
   justify-content: center;
-  
-  /* Simplified shadow */
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   border: 2px solid rgba(255, 255, 255, 0.2);
   cursor: grab;
-  
-  /* Only transition properties that don't conflict with drag */
   transition: box-shadow 0.2s ease, transform 0.2s ease;
-  
-  /* Typography */
   color: white;
   font-weight: 600;
   font-size: 12px;
@@ -98,27 +82,65 @@
   letter-spacing: 0.5px;
 }
 
+/* Hover effect for tray items */
 .element-placeholder:hover:not(.dragging) {
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Optimized dragging state - disable expensive properties */
+/* Optimized dragging state - disables expensive properties for smooth performance */
 .element-placeholder.dragging {
-  /* Remove transitions during drag to optimize*/
-  transition: none !important;
-  
-  /* Performance hint */
-  will-change: transform;
-  
-  /* Simplified appearance */
+  transition: none !important; /* Remove all transitions during drag */
+  z-index: 1000;
+  will-change: transform; /* Browser optimization hint */
   opacity: 0.8;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  
-  /* Let the drag library handle transforms */
 }
 
-/* Canvas item optimizations */
+/* Canvas items with smooth transitions */
+.canvas-item {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+/* Optimized dragging state for canvas items */
+.canvas-item.dragging {
+  transition: none !important; /* Remove transitions during drag for performance */
+  will-change: transform;
+  opacity: 0.9;
+  border-color: #4299e1;
+  z-index: 1000;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* Smooth snap-back animation when drag ends */
+.canvas-item:not(.dragging) {
+  transform: translate3d(0, 0, 0) !important;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 0.3s ease,
+              box-shadow 0.3s ease;
+}
+
+/* Enhanced cell visual feedback */
+.form-cell {
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.form-cell.drag-over-empty {
+  background: #e6fffa !important;
+  border-color: #38b2ac !important;
+  border-style: solid !important;
+  transform: scale(1.02);
+}
+
+.form-cell.drag-over-occupied {
+  background: #fed7d7 !important;
+  border-color: #e53e3e !important;
+  border-style: solid !important;
+}
+
+/* Canvas item base styling */
 .canvas-item {
   width: 100%;
   height: 100%;
@@ -131,8 +153,6 @@
   border: 2px solid #e2e8f0;
   cursor: grab;
   padding: 4px;
-  
-  /* Only transition border for performance */
   transition: border-color 0.15s ease;
 }
 
@@ -140,15 +160,17 @@
   border-color: #4299e1;
 }
 
+/* Canvas item dragging state */
 .canvas-item.dragging {
-  /* Disable transitions during drag */
-  transition: none !important;
+  transition: none !important; /* Disable transitions during drag */
   will-change: transform;
   opacity: 0.9;
   border-color: #4299e1;
 }
 
+/* Canvas item content wrapper */
 .canvas-item-content {
+  z-index: 1000;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -157,6 +179,7 @@
   text-align: center;
 }
 
+/* Canvas item labels */
 .canvas-item-label {
   font-size: 10px;
   font-weight: 600;
@@ -166,14 +189,14 @@
   line-height: 1;
 }
 
-/* Specific colors for different element types*/
+/* Type-specific colors for tray elements */
 .element-placeholder.type-heading { background: #667eea; }
 .element-placeholder.type-text { background: #f5576c; }
 .element-placeholder.type-email { background: #4facfe; }
 .element-placeholder.type-phone { background: #43e97b; }
 .element-placeholder.type-button { background: #fa709a; }
 
-/* Form component styles */
+/* Form component styling */
 .form-cell h3 {
   margin: 0;
   padding: 0;
@@ -201,8 +224,20 @@
   padding: 8px 16px;
   font-size: 14px;
   font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.form-cell button:disabled {
   cursor: not-allowed;
   opacity: 0.7;
+  background: #a0aec0;
+}
+
+.form-cell button:not(:disabled):hover {
+  background: #3182ce;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Tray item content styling */
@@ -224,4 +259,176 @@
   text-transform: uppercase;
   letter-spacing: 0.5px;
   text-align: center;
+}
+
+/* Top control bar */
+.form-builder-controls {
+  grid-row: 1 / 2;
+  grid-column: 1 / 6;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+/* Edit/Preview mode toggle */
+.mode-toggle-btn {
+  background: #4299e1;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.mode-toggle-btn:hover {
+  background: #3182ce;
+}
+
+/* Submissions viewer toggle */
+.submissions-toggle-btn {
+  background: #805ad5;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.submissions-toggle-btn:hover {
+  background: #6b46c1;
+}
+
+/* Modal overlay for submissions viewer */
+.submissions-viewer {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  max-width: 600px;
+  max-height: 70vh;
+  width: 90%;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+/* Submissions modal header */
+.submissions-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #e2e8f0;
+  background: #f8f9fa;
+}
+
+.submissions-header h3 {
+  margin: 0;
+  color: #2d3748;
+}
+
+/* Header action buttons */
+.submissions-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.submissions-actions button {
+  background: #e2e8f0;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.submissions-actions button:hover:not(:disabled) {
+  background: #cbd5e0;
+}
+
+.submissions-actions button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Scrollable submissions list */
+.submissions-list {
+  max-height: 50vh;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+/* Empty state message */
+.no-submissions {
+  text-align: center;
+  color: #718096;
+  font-style: italic;
+  margin: 40px 0;
+}
+
+/* Individual submission cards */
+.submission-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  background: #fafafa;
+}
+
+.submission-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.submission-date {
+  font-size: 12px;
+  color: #718096;
+}
+
+/* Form field data display */
+.submission-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+}
+
+.field-label {
+  font-weight: 500;
+  color: #4a5568;
+  min-width: 120px;
+}
+
+.field-value {
+  color: #2d3748;
+  flex: 1;
+  text-align: right;
+  font-family: monospace;
+  background: #edf2f7;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 13px;
 }

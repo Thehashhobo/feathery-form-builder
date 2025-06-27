@@ -1,12 +1,6 @@
 // types.ts
 export type FormComponentType = "heading" | "text" | "email" | "phone" | "button";
 
-export interface FormComponent {
-  id: string; // unique instance ID
-  type: FormComponentType;
-  props?: Record<string, any>;
-}
-
 export interface TrayElement {
   id: string;                  // Unique ID for drag system
   type: FormComponentType;     // Component type for componentRegistry
@@ -16,8 +10,17 @@ export interface TrayElement {
   placeholder?: string;        // Custom placeholder for input fields only
 }
 
-// Extended FormComponent for canvas items
-export interface CanvasFormComponent extends FormComponent {
+// For canvas items
+export interface CanvasFormComponent {
+  id: string; // unique instance ID
+  type: FormComponentType;
+  props?: Record<string, any>;
   displayName?: string; // Display name from the tray element
   placeholder?: string; // Custom placeholder text
 }
+
+// Form submission data structure
+export interface FormData {
+  [fieldId: string]: string;
+}
+
