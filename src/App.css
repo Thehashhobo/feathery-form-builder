@@ -26,14 +26,36 @@
 }
 
 .form-cell {
+  /* Layout */
   display: flex;
   align-items: center;
   justify-content: center;
+  
+  /* Sizing */
+  box-sizing: border-box;
+  min-height: 75px;
+  padding: 8px;
+  
+  /* Appearance */
   border: 1px dashed #ccc;
-  margin: 4px;
-  font-size: 14px;
-  font-weight: bold;
+  background: #fff;
+  
+  /* Only transition background color for performance */
+  transition: background-color 0.15s ease;
 }
+
+.form-cell.has-component {
+  background: #f9f9f9 !important;
+}
+
+.form-cell.drag-over-empty {
+  background: #ccf !important;
+}
+
+.form-cell.drag-over-occupied {
+  background: #fcc !important;
+}
+
 
 
 .form-canvas {
@@ -45,11 +67,161 @@
   background: #ffffff;
   box-shadow: var(--diffuse-shadow);
   padding: 16px;
+  gap: 4px;
 }
 
 .element-placeholder {
-  background: #dddddd;
-  border-radius: 50%;
-  height: 75px;
-  width: 75px;
+  /* Simplified background for better performance */
+  background: #4299e1;
+  border-radius: 12px;
+  height: 80px;
+  width: 120px;
+  
+  /* Layout */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* Simplified shadow */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  cursor: grab;
+  
+  /* Only transition properties that don't conflict with drag */
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  
+  /* Typography */
+  color: white;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.element-placeholder:hover:not(.dragging) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Optimized dragging state - disable expensive properties */
+.element-placeholder.dragging {
+  /* Remove transitions during drag to optimize*/
+  transition: none !important;
+  
+  /* Performance hint */
+  will-change: transform;
+  
+  /* Simplified appearance */
+  opacity: 0.8;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  
+  /* Let the drag library handle transforms */
+}
+
+/* Canvas item optimizations */
+.canvas-item {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: white;
+  border: 2px solid #e2e8f0;
+  cursor: grab;
+  padding: 4px;
+  
+  /* Only transition border for performance */
+  transition: border-color 0.15s ease;
+}
+
+.canvas-item:hover:not(.dragging) {
+  border-color: #4299e1;
+}
+
+.canvas-item.dragging {
+  /* Disable transitions during drag */
+  transition: none !important;
+  will-change: transform;
+  opacity: 0.9;
+  border-color: #4299e1;
+}
+
+.canvas-item-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.canvas-item-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #4a5568;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  line-height: 1;
+}
+
+/* Specific colors for different element types*/
+.element-placeholder.type-heading { background: #667eea; }
+.element-placeholder.type-text { background: #f5576c; }
+.element-placeholder.type-email { background: #4facfe; }
+.element-placeholder.type-phone { background: #43e97b; }
+.element-placeholder.type-button { background: #fa709a; }
+
+/* Form component styles */
+.form-cell h3 {
+  margin: 0;
+  padding: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #2d3748;
+  text-align: center;
+}
+
+.form-cell input {
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 14px;
+  width: 100%;
+  max-width: 200px;
+  box-sizing: border-box;
+}
+
+.form-cell button {
+  background: #4299e1;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Tray item content styling */
+.tray-item-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.tray-item-icon {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.tray-item-label {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-align: center;
 }

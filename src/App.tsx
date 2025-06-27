@@ -1,160 +1,129 @@
 import "./App.css";
-import { DndContext, useDraggable, useDroppable } from "@dnd-kit/core";
+import { DndContext } from "@dnd-kit/core";
 import { useState } from "react";
-import { componentRegistry } from "./componentRegistry";
-import type { FormComponent } from "./types.ts";
+import { DraggableTrayItem, DroppableCell } from "./components";
+import type { TrayElement, CanvasFormComponent } from "./types";
 import { v4 as uuidv4 } from "uuid";
 
-const trayElements: FormComponent[] = [
-  { id: "heading", type: "heading" },
-  { id: "text", type: "text" },
-  { id: "email", type: "email" },
-  { id: "phone", type: "phone" },
-  { id: "button", type: "button" },
+const trayElements: TrayElement[] = [
+  { 
+    id: "heading-main", 
+    type: "heading", 
+    displayName: "Sign Up",
+    description: "Main page heading",
+    icon: "📄",
+  },
+  { 
+    id: "text-first-name", 
+    type: "text", 
+    displayName: "First Name",
+    description: "First name input field",
+    placeholder: "Enter your first name"
+  },
+  { 
+    id: "text-last-name", 
+    type: "text", 
+    displayName: "Last Name",
+    description: "Last name input field",
+    placeholder: "Enter your last name"
+  },
+  { 
+    id: "email-contact", 
+    type: "email", 
+    displayName: "Email",
+    description: "Email address input",
+    placeholder: "your.email@example.com"
+  },
+  { 
+    id: "phone-mobile", 
+    type: "phone", 
+    displayName: "Phone",
+    description: "Phone number input",
+    placeholder: "(555) 123-4567"
+  },
+  { 
+    id: "button-submit", 
+    type: "button", 
+    displayName: "Submit",
+    description: "Submit form button",
+  },
+
 ];
 
-function DraggableTrayItem({ type }: { type: FormComponent["type"] }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({ 
-      id: type,
-      data: { 
-        type: 'tray-item',
-        componentType: type 
-      }
-    });
-
-  const Preview = componentRegistry[type];
-
-  return (
-    <div
-      ref={setNodeRef}
-      {...listeners}
-      {...attributes}
-      className="element-placeholder"
-      style={{
-        transform: transform
-          ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
-          : undefined,
-        opacity: isDragging ? 0.5 : 1,
-        cursor: "grab",
-      }}
-    >
-      <Preview />
-    </div>
-  );
-}
-
-function DraggableCanvasItem({ component }: { component: FormComponent }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({ 
-      id: component.id,
-      data: { 
-        type: 'canvas-item',
-        component 
-      }
-    });
-
-  const Element = componentRegistry[component.type];
-
-  return (
-    <div
-      ref={setNodeRef}
-      {...listeners}
-      {...attributes}
-      style={{
-        transform: transform
-          ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
-          : undefined,
-        opacity: isDragging ? 0.5 : 1,
-        cursor: "grab",
-        width: "100%",
-        height: "100%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <Element />
-    </div>
-  );
-}
-
-function DroppableCell({
-  id,
-  component,
-}: {
-  id: string;
-  component?: FormComponent;
-}) {
-  const { setNodeRef, isOver } = useDroppable({ id });
-
-  const style = {
-    background: isOver ? "#ccf" : "#fff",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    border: "1px dashed #ccc",
-    padding: "8px",
-    minHeight: "75px",
-  };
-
-  return (
-    <div ref={setNodeRef} className="form-cell" style={style}>
-      {component && <DraggableCanvasItem component={component} />}
-    </div>
-  );
-}
-
 function App() {
-  const [canvasMap, setCanvasMap] = useState<Record<string, FormComponent>>({});
-
+  const [canvasMap, setCanvasMap] = useState<Record<string, CanvasFormComponent>>({});
   const handleDragEnd = (event: any) => {
+    // active: the item being dragged
+    // over: the target cell where the item is dropped
     const { active, over } = event;
-    
-    if (!over) return;
 
     const dragData = active.data.current;
+    // Handle dragging canvas items outside (removes from canvas)
+    if (dragData?.type === 'canvas-item' && !over) {
+      const draggedComponent = dragData.component;
+      const sourceCellId = Object.keys(canvasMap).find(
+        cellId => canvasMap[cellId]?.id === draggedComponent.id
+      );
+      
+      if (sourceCellId) {
+        setCanvasMap((prev) => {
+          const newMap = { ...prev };
+          delete newMap[sourceCellId];
+          return newMap;
+        });
+      }
+      return;
+    }
+
+
     const targetCellId = over.id;
 
+    // Dragging from tray - create new component
     if (dragData?.type === 'tray-item') {
-      // Dragging from tray - create new component
       setCanvasMap((prev) => ({
         ...prev,
         [targetCellId]: {
           id: uuidv4(),
-          type: dragData.componentType,
+          type: dragData.componentType, // Use the actual form component type
+          displayName: dragData.displayName, // Store the display name from tray
+          placeholder: dragData.trayElement.placeholder,
         },
       }));
-    } else if (dragData?.type === 'canvas-item') {
-      // Dragging from canvas - move existing component
+    } 
+
+    // Dragging from canvas - move existing component
+    else if (dragData?.type === 'canvas-item') {
+      
       const draggedComponent = dragData.component;
       
-      // Find the source cell
       const sourceCellId = Object.keys(canvasMap).find(
         cellId => canvasMap[cellId]?.id === draggedComponent.id
       );
-
+      // If source cell exists and is different from target, swap components
       if (sourceCellId && sourceCellId !== targetCellId) {
         setCanvasMap((prev) => {
           const newMap = { ...prev };
+          const targetComponent = newMap[targetCellId];
           
-          // Remove from source cell
-          delete newMap[sourceCellId];
           
-          // Add to target cell (this will overwrite if target has a component)
           newMap[targetCellId] = draggedComponent;
+          if (targetComponent) {
+            newMap[sourceCellId] = targetComponent;
+          } else {
+            delete newMap[sourceCellId];
+          }
           
           return newMap;
         });
-      }
+      } 
     }
   };
 
   return (
     <DndContext onDragEnd={handleDragEnd}>
       <div className="element-tray">
-        {trayElements.map((el) => (
-          <DraggableTrayItem key={el.type} type={el.type} />
+        {trayElements.map((element) => (
+          <DraggableTrayItem key={element.id} element={element} />
         ))}
       </div>
 
