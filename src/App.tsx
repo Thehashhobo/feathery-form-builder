@@ -1,5 +1,12 @@
 import "./App.css";
-import { DndContext } from "@dnd-kit/core";
+import { 
+  DndContext, 
+  TouchSensor, 
+  MouseSensor, 
+  useSensor, 
+  useSensors,
+  KeyboardSensor
+} from "@dnd-kit/core";
 import { useState } from "react";
 import { DraggableTrayItem, DroppableCell, SubmissionsViewer } from "./components";
 import type { TrayElement, CanvasFormComponent, FormData } from "./types";
@@ -52,6 +59,27 @@ const trayElements: TrayElement[] = [
 ];
 
 function App() {
+  // Configure sensors for multi-input support (mouse, touch, keyboard)
+  const mouseSensor = useSensor(MouseSensor, {
+    // Require the mouse to move by 10 pixels before activating
+    activationConstraint: {
+      distance: 10,
+    },
+  });
+
+  const touchSensor = useSensor(TouchSensor, {
+    // Press delay for touch devices to distinguish from scrolling
+    activationConstraint: {
+      delay: 250,
+      tolerance: 10,
+    },
+  });
+
+  const keyboardSensor = useSensor(KeyboardSensor);
+
+  // Combine sensors for comprehensive input support
+  const sensors = useSensors(mouseSensor, touchSensor, keyboardSensor);
+
   const [canvasMap, setCanvasMap] = useState<Record<string, CanvasFormComponent>>({});
   const [formData, setFormData] = useState<FormData>({});
   const [isPreviewMode, setIsPreviewMode] = useState(false);
@@ -207,7 +235,7 @@ function App() {
   };
 
   return (
-    <DndContext onDragEnd={handleDragEnd}>
+    <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
       {/* Form Builder Controls */}
       <div className="form-builder-controls">
         <button 

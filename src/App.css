@@ -432,3 +432,80 @@
   border-radius: 4px;
   font-size: 13px;
 }
+
+/* Mobile and touch device optimizations */
+@media (max-width: 768px) {
+  /* Larger touch targets for mobile */
+  .form-cell {
+    min-height: 90px;
+    padding: 12px;
+  }
+
+  .element-placeholder {
+    height: 90px;
+    width: 140px;
+    font-size: 14px;
+  }
+
+  /* Larger tray spacing on mobile */
+  .element-tray {
+    gap: 16px;
+    padding: 16px;
+    flex-wrap: wrap;
+  }
+
+  /* Responsive grid for mobile */
+  .form-canvas {
+    grid-template-columns: 1fr;
+    grid-template-rows: repeat(8, 90px);
+    max-width: 100%;
+    padding: 12px;
+  }
+}
+
+/* Touch-specific enhancements */
+@media (hover: none) and (pointer: coarse) {
+  /* Increase touch targets for better accessibility */
+  .element-placeholder {
+    min-height: 88px;
+    min-width: 132px;
+  }
+
+  .form-cell {
+    min-height: 88px;
+  }
+
+  /* Improve touch feedback */
+  .form-cell.drag-over-empty {
+    background: #e6fffa !important;
+    border: 3px solid #38b2ac !important;
+    transform: scale(1.05);
+  }
+
+  .form-cell.drag-over-occupied {
+    background: #fed7d7 !important;
+    border: 3px solid #e53e3e !important;
+    transform: scale(1.05);
+  }
+
+  /* Better visual feedback for touch */
+  .element-placeholder:active {
+    transform: scale(0.95);
+    opacity: 0.9;
+  }
+
+  .canvas-item:active {
+    transform: scale(0.95);
+    opacity: 0.9;
+  }
+}
+
+/* Prevent text selection during drag on touch devices */
+.element-placeholder,
+.canvas-item {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
