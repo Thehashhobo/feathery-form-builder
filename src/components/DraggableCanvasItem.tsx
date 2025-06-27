@@ -7,11 +7,10 @@ interface DraggableCanvasItemProps {
   value?: string;
   onChange?: (value: string) => void;
   onClick?: () => void;
-  disabled?: boolean;
   isPreviewMode?: boolean;
 }
 
-export function DraggableCanvasItem({ component, value, onChange, onClick, disabled, isPreviewMode }: DraggableCanvasItemProps) {
+export function DraggableCanvasItem({ component, value, onChange, onClick, isPreviewMode }: DraggableCanvasItemProps) {
 
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({ 
@@ -54,7 +53,7 @@ export function DraggableCanvasItem({ component, value, onChange, onClick, disab
           value={value}
           onChange={onChange}
           onClick={onClick}
-          disabled={disabled}
+          disabled={!isPreviewMode}
         />
       </div>
     </div>

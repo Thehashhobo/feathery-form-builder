@@ -8,11 +8,10 @@ interface DroppableCellProps {
   value?: string;
   onChange?: (value: string) => void;
   onClick?: () => void;
-  disabled?: boolean;
   isPreviewMode?: boolean;
 }
 
-export function DroppableCell({ id, component, value, onChange, onClick, disabled, isPreviewMode }: DroppableCellProps) {
+export function DroppableCell({ id, component, value, onChange, onClick, isPreviewMode }: DroppableCellProps) {
 
 
   const { setNodeRef, isOver } = useDroppable({ id });
@@ -34,7 +33,6 @@ export function DroppableCell({ id, component, value, onChange, onClick, disable
           value={value}
           onChange={onChange}
           onClick={onClick}
-          disabled={disabled}
           isPreviewMode={isPreviewMode}
         />
       )}

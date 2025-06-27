@@ -19,7 +19,7 @@ const trayElements: TrayElement[] = [
     type: "heading", 
     displayName: "Sign Up",
     description: "Main page heading",
-    icon: "📄",
+
   },
   { 
     id: "text-first-name", 
@@ -228,7 +228,6 @@ function App() {
           return newMap;
         });
         
-        // Trigger success animation for moved items
 
       } 
     }
@@ -271,7 +270,6 @@ function App() {
               value={component ? formData[component.id] || "" : ""}
               onChange={component ? (value) => handleFieldChange(component.id, value) : undefined}
               onClick={handleClick}
-              disabled={!isPreviewMode}
               isPreviewMode={isPreviewMode}
             />
           );
